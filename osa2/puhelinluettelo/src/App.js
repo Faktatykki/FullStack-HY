@@ -49,25 +49,35 @@ const App = () => {
       name: newName,
       number: newNumber
     }
-    
+
     if (persons.some(person => person.name === personObject.name)) {
-      updateNumber(personObject.name, personObject.number)
+      if (personObject.number.length >= 8) {
+        updateNumber(personObject.name, personObject.number)
+      } else {
+        setIsError(true)
+        setErrorMessage('Number must be at least 8 characters')
+      }
     } else {
       personService.create(personObject)
-      
-      setPersons(persons.concat(personObject))
-      setResults(results.concat(personObject))
+      .then(createdPerson => {
+        setPersons(persons.concat(createdPerson))
+        setResults(results.concat(createdPerson))
+        
+        setErrorMessage(`Added ${createdPerson.name}`)
+      })
+      .catch(error => {
+        setIsError(true)
+        setErrorMessage(error.response.data.error)
+      })
       
       setNewName('')
       setNewNumber('')
-
-      setErrorMessage(`Added ${personObject.name}`)
-      setTimeout(() => {
-        setErrorMessage(null)
-        setIsError(false)
-      }, 3000)
-
     } 
+
+    setTimeout(() => {
+      setErrorMessage(null)
+      setIsError(false)
+    }, 3000)
   }
 
   const removeName = (name) => {
@@ -84,9 +94,7 @@ const App = () => {
         setErrorMessage(null)
         setIsError(false)
       }, 3000)
-
-    } else {
-    }
+    } 
 
     setIsError(false)
   }
