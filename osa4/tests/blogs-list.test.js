@@ -8,6 +8,7 @@ const api = supertest(app)
 
 const Blog = require('../models/blog')
 const User = require('../models/user')
+const { test } = require('@jest/globals')
 
 let authorization = null
 
@@ -115,6 +116,17 @@ describe('bloglist POST', () => {
             .send(toSend)
             .expect(400)
     })
+
+    test('no blog added if unauthorized', async () => {
+        await api
+            .post('/api/blogs')
+            .send(helper.oneBlog)
+            .expect(401)
+   
+        const blogsAtEnd = await helper.blogsInDb()
+        
+        expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+    })
 })
 
 describe('bloglist DELETE', () => {
@@ -159,6 +171,5 @@ describe('bloglist UPDATE', () => {
 })
 
 afterAll( async () => {
-  
     mongoose.connection.close()
 })
